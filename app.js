@@ -391,29 +391,28 @@ function myWindow(title, link, image, dates, price) {
 fetch('https://app.ticketmaster.com/discovery/v2/events.json?apikey=MLsmLnJG0UCS1USmgAZwHcN1sFH8wpgJ&countryCode=NL&size=125')
 // parse to JSON format
 .then(function(response) {
-    return response.json();
+  return response.json();
 })
 // catch error
 .then(function(data) {
-    for (let i = 0; i < data._embedded.events.length; i++) {
-        const event = data._embedded.events[i];
+  data._embedded.events.map(event => {
+    const location = event._embedded.venues[0].location;
+    var marker = new google.maps.Marker({
+      position: {
+        lat: Number(location.latitude),
+        lng: Number(location.longitude),
+      },
+      map: map,
+      title: event.name,
+      icon: 'icon.png'
+    });
 
-        const location = event._embedded.venues[0].location;
-        var marker = new google.maps.Marker({
-            position: {
-            lat: Number(location.latitude),
-            lng: Number(location.longitude),
-            },
-            map: map,
-            title: event.name,
-            icon: 'icon.png'
-        });
+    var infowindow = new google.maps.InfoWindow({
+      content: myWindow(event.name, event.url, event.images[3], event.dates, event.priceRanges[0])
+    });
 
-        var infowindow = new google.maps.InfoWindow({
-        content: myWindow(event.name, event.url, event.images[3], event.dates, event.priceRanges[0])
-        });
-        marker.addListener('click', () => infowindow.open(map, marker));
-    }
+    marker.addListener('click', () => infowindow.open(map, marker));
+  });
 })
 .catch(function (error) {
   // onAPIError();
